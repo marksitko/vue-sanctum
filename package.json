@@ -1,22 +1,35 @@
 {
-  "name": "vue-sanctum",
-  "version": "1.0.0",
-  "description": "",
-  "main": "./dist/index.js",
-  "scripts": {
-    "dev": "vue serve ./src/MyButton.vue",
-    "build": "bili ./src/index.js --plugins.vue"
-  },
-  "files": [
-    "dist/*"
-  ],
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "devDependencies": {
-    "bili": "^5.0.5",
-    "rollup-plugin-copy": "^3.3.0",
-    "rollup-plugin-vue": "^6.0.0",
-    "vue-template-compiler": "^2.6.12"
-  }
+    "name": "vue-sanctum",
+    "version": "1.0.0",
+    "license": "MIT",
+    "description": "Vue Plugin for the Laravel Sanctum Authentication workflow.",
+    "author": "Mark Sitko <hey@marksitko.de>",
+    "main": "./dist/index.js",
+    "scripts": {
+        "build": "bili ./src/index.js --plugins.vue"
+    },
+    "files": [
+        "dist/*"
+    ],
+    "keywords": [
+        "vue",
+        "vuex",
+        "plugin",
+        "sanctum",
+        "authentication",
+        "laravel"
+    ],
+    "homepage": "https://github.com/marksitko/vue-sanctum#readme",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/marksitko/vue-sanctum.git"
+    },
+    "bugs": {
+        "url": "https://github.com/marksitko/vue-sanctum/issues"
+    },
+    "devDependencies": {
+        "bili": "^5.0.5",
+        "rollup-plugin-copy": "^3.3.0",
+        "rollup-plugin-vue": "^6.0.0"
+    }
 }

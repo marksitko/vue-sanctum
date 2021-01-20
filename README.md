@@ -111,8 +111,6 @@ new Vue({
 
 ### Usage:
 ```vue
-<script>
-import { mapGetters, mapActions } from 'vuex';
 <template>
     <div>
         <p v-if="isAuthenticated">Hello {{ user.name}}!</p>
@@ -120,6 +118,9 @@ import { mapGetters, mapActions } from 'vuex';
         <!-- Your login form  -->
     </div>
 </template>
+
+<script>
+import { mapGetters, mapActions } from 'vuex';
 export default {
   data() {
     return {

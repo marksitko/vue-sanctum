@@ -31,57 +31,32 @@ export default {
     },
     actions: {
         login({ commit, dispatch }, credentials) {
-            return new Promise((resolve, reject) => {
-                this._vm.$sanctum
-                    .login(credentials)
-                    .then(({ data }) => {
-                        commit('updateXSRFTokenState', this._vm.$sanctum.hasXSRFToken());
-                        dispatch('fetchUser');
-                        resolve(data);
-                    })
-                    .catch(error => reject(error));
+            return this._vm.$sanctum.login(credentials).then(({ data }) => {
+                commit('updateXSRFTokenState', this._vm.$sanctum.hasXSRFToken());
+                dispatch('fetchUser');
+                return data;
             });
         },
         fetchUser({ commit }) {
-            return new Promise((resolve, reject) => {
-                this._vm.$sanctum
-                    .me()
-                    .then(({ data }) => {
-                        commit('setUser', data);
-                        commit('updateAuthenticatedState', true);
-                        resolve(data);
-                    })
-                    .catch(error => reject(error));
+            return this._vm.$sanctum.me().then(({ data }) => {
+                commit('setUser', data);
+                commit('updateAuthenticatedState', true);
+                return data;
             });
         },
         logout({ dispatch }) {
-            return new Promise((resolve, reject) => {
-                this._vm.$sanctum
-                    .logout()
-                    .then(response => {
-                        resolve(response);
-                    })
-                    .catch(error => reject(error))
-                    .finally(() => {
-                        dispatch('clear');
-                    });
+            return this._vm.$sanctum.logout().finally(() => {
+                dispatch('clear');
             });
         },
         tryAutoLogin({ dispatch, getters }) {
-            return new Promise((resolve, reject) => {
-                if (!getters.hasXSRFToken) {
-                    reject();
-                    return;
-                }
-                dispatch('fetchUser')
-                    .then(data => {
-                        resolve(data);
-                    })
-                    .catch(error => {
-                        //   deleteCookie(COOKIES.XSRF_TOKEN);
-                        dispatch('clear');
-                        reject(error);
-                    });
+            if (!getters.hasXSRFToken) {
+                return Promise.reject();
+            }
+            return dispatch('fetchUser').catch(error => {
+                //   deleteCookie(COOKIES.XSRF_TOKEN);
+                dispatch('clear');
+                throw error;
             });
         },
         clear({ commit }) {

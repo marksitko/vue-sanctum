@@ -39,51 +39,20 @@ export default {
 
         Vue.prototype.$sanctum = {
             fetchCSRFToken() {
-                return new Promise((resolve, reject) => {
-                    axios
-                        .get(routes.csrf)
-                        .then(response => {
-                            resolve(response);
-                        })
-                        .catch(error => reject(error));
-                });
+                return axios.get(routes.csrf);
             },
             login(credentials) {
-                return new Promise((resolve, reject) => {
-                    this.fetchCSRFToken()
-                        .then(() => {
-                            axios
-                                .post(routes.login, credentials)
-                                .then(response => {
-                                    resolve(response);
-                                })
-                                .catch(error => reject(error));
-                        })
-                        .catch(error => reject(error));
+                return this.fetchCSRFToken().then(() => {
+                    return axios.post(routes.login, credentials);
                 });
             },
             logout() {
-                return new Promise((resolve, reject) => {
-                    axios
-                        .post(routes.logout)
-                        .then(response => {
-                            resolve(response);
-                        })
-                        .catch(error => reject(error))
-                        .finally(() => {
-                            deleteCookie(xsrfToken);
-                        });
+                return axios.post(routes.logout).finally(() => {
+                    deleteCookie(xsrfToken);
                 });
             },
             me() {
-                return new Promise((resolve, reject) => {
-                    axios
-                        .get(routes.me)
-                        .then(response => {
-                            resolve(response);
-                        })
-                        .catch(error => reject(error));
-                });
+                return axios.get(routes.me);
             },
             hasXSRFToken() {
                 return hasCookie(xsrfToken);

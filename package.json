@@ -1,6 +1,6 @@
 {
     "name": "vue-sanctum",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "license": "MIT",
     "description": "Vue Plugin for the Laravel Sanctum Authentication workflow.",
     "author": "Mark Sitko <hey@marksitko.de>",
@@ -9,7 +9,8 @@
         "build": "bili ./src/index.js --plugins.vue"
     },
     "files": [
-        "dist/*"
+        "dist/*",
+        "src/*"
     ],
     "keywords": [
         "vue",

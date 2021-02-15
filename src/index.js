@@ -7,6 +7,7 @@ export default {
             axios: null,
             store: null,
             eventBus: null,
+            fetchUserAfterLogin: true,
             xsrfToken: 'XSRF-TOKEN',
             storeModuleName: 'sanctum',
             routes: {
@@ -17,7 +18,7 @@ export default {
             },
         };
 
-        const { axios, store, eventBus, xsrfToken, storeModuleName, routes } = {
+        const finalOptions = {
             ...defaults,
             ...options,
             routes: {
@@ -25,6 +26,8 @@ export default {
                 ...options.routes,
             },
         };
+
+        const { axios, store, eventBus, xsrfToken, storeModuleName, routes } = finalOptions;
 
         // this is the minimum required option
         if (!axios || typeof axios !== 'function') {
@@ -58,6 +61,7 @@ export default {
                 return hasCookie(xsrfToken);
             },
             eventBus: _eventBus,
+            options: finalOptions,
         };
 
         // if store is passed, register the sanctum module.
@@ -68,3 +72,5 @@ export default {
         }
     },
 };
+
+export { setCookie, hasCookie, deleteCookie, currentWildcardDomain } from './utils';

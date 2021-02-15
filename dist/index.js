@@ -1,9 +1,11 @@
 /*!
- * vue-sanctum v1.0.1
+ * vue-sanctum v1.0.2
  * (c) Mark Sitko <hey@marksitko.de>
  * Released under the MIT License.
  */
 'use strict';
+
+Object.defineProperty(exports, '__esModule', { value: true });
 
 var currentWildcardDomain = function currentWildcardDomain() {
   return window.location.hostname.substr(window.location.hostname.indexOf('.'));
@@ -63,7 +65,11 @@ var sanctum = {
       return this._vm.$sanctum.login(credentials).then(function (_ref2) {
         var data = _ref2.data;
         commit('updateXSRFTokenState', _this._vm.$sanctum.hasXSRFToken());
-        dispatch('fetchUser');
+
+        if (_this._vm.$sanctum.options.fetchUserAfterLogin) {
+          dispatch('fetchUser');
+        }
+
         return data;
       });
     },
@@ -91,7 +97,6 @@ var sanctum = {
       }
 
       return dispatch('fetchUser')["catch"](function (error) {
-        //   deleteCookie(COOKIES.XSRF_TOKEN);
         dispatch('clear');
         throw error;
       });
@@ -122,6 +127,7 @@ var index = {
       axios: null,
       store: null,
       eventBus: null,
+      fetchUserAfterLogin: true,
       xsrfToken: 'XSRF-TOKEN',
       storeModuleName: 'sanctum',
       routes: {
@@ -131,17 +137,15 @@ var index = {
         me: 'me'
       }
     };
-
-    var _defaults$options$rou = Object.assign({}, defaults, options, {
+    var finalOptions = Object.assign({}, defaults, options, {
       routes: Object.assign({}, defaults.routes, options.routes)
-    }),
-        axios = _defaults$options$rou.axios,
-        store = _defaults$options$rou.store,
-        eventBus = _defaults$options$rou.eventBus,
-        xsrfToken = _defaults$options$rou.xsrfToken,
-        storeModuleName = _defaults$options$rou.storeModuleName,
-        routes = _defaults$options$rou.routes; // this is the minimum required option
-
+    });
+    var axios = finalOptions.axios,
+        store = finalOptions.store,
+        eventBus = finalOptions.eventBus,
+        xsrfToken = finalOptions.xsrfToken,
+        storeModuleName = finalOptions.storeModuleName,
+        routes = finalOptions.routes; // this is the minimum required option
 
     if (!axios || typeof axios !== 'function') {
       throw new Error('[vue-sanctum] It requires an axios instance.');
@@ -174,7 +178,8 @@ var index = {
       hasXSRFToken: function hasXSRFToken() {
         return hasCookie(xsrfToken);
       },
-      eventBus: _eventBus
+      eventBus: _eventBus,
+      options: finalOptions
     }; // if store is passed, register the sanctum module.
     // set immediately the XSRF-Token state, this is required for the tryAutoLogin action.
 
@@ -185,4 +190,8 @@ var index = {
   }
 };
 
-module.exports = index;
+exports.currentWildcardDomain = currentWildcardDomain;
+exports.default = index;
+exports.deleteCookie = deleteCookie;
+exports.hasCookie = hasCookie;
+exports.setCookie = setCookie;

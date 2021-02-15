@@ -202,19 +202,70 @@ export default {
 ---
 ## ⚙️ VueSanctum Options
 Use options to customize VueSanctum.
-| Option name       | Type       | Required | Default               | Description |
-| ----------------- | ---------- | ---------|-----------------------|-------------|
-| `axios`           | `Function` | `true`   | `null`                | The axios instance is used to make request to your backend. |
-| `store`           | `Function` | `false`  | `null`                | If the `Vuex store` instance is passed it will automatically activate the `VueSanctum Vuex feature` and register per default a `sanctum` namespaced module. |
-| `eventBus`        | `Function` | `false`  | `null`                | If you have defined an own `eventBus` app instance, you can pass it to `VueSanctum`, otherwise it will register an own `sanctumEventBus` to the global `window` object. |
-| `xsrfToken`       | `String`   | `false`  | `XSRF-TOKEN`          | The name of the XSRF-Token issued from your Laravel backend. The default one is also the Laravel default name. |
-| `storeModuleName` | `String`   | `false`  | `sanctum`             | The registered `Vuex` module name. Works only if a `store` instance is passed. |
-| `routes`          | `Object`   | `false`  |                       | Routes defined in object props. They will be called from the `axios` instance. |
-| `routes.csrf`     | `String`   | `false`  | `sanctum/csrf-cookie` | Route to fetch the XSRF-Cookie from your Laravel backend. |
-| `routes.login`    | `String`   | `false`  | `login`               | Sends a post request to login. |
-| `routes.logout`   | `String`   | `false`  | `logout`              | Sends a post request to logout. |
-| `routes.me`       | `String`   | `false`  | `me`                  | Sends a get request to get the current authenticated user. |
+| Option name            | Type       | Required | Default               | Description |
+| -----------------      | ---------- | ---------|-----------------------|-------------|
+| `axios`                | `Function` | `true`   | `null`                | The axios instance is used to make request to your backend. |
+| `store`                | `Function` | `false`  | `null`                | If the `Vuex store` instance is passed it will automatically activate the `VueSanctum Vuex feature` and register per default a `sanctum` namespaced module. |
+| `eventBus`             | `Function` | `false`  | `null`                | If you have defined an own `eventBus` app instance, you can pass it to `VueSanctum`, otherwise it will register an own `sanctumEventBus` to the global `window` object. |
+| `fetchUserAfterLogin` | `Boolean`   | `false`  | `true`               | Works only in combination with the `Vuex feature`. If option is enabled, it will fetch and set the user to the store directly after the login action. |
+| `xsrfToken`           | `String`   | `false`  | `XSRF-TOKEN`          | The name of the XSRF-Token issued from your Laravel backend. The default one is also the Laravel default name. |
+| `storeModuleName`     | `String`   | `false`  | `sanctum`             | The registered `Vuex` module name. Works only if a `store` instance is passed. |
+| `routes`              | `Object`   | `false`  |                       | Routes defined in object props. They will be called from the `axios` instance. |
+| `routes.csrf`         | `String`   | `false`  | `sanctum/csrf-cookie` | The route to fetch the XSRF-Cookie from your Laravel backend. |
+| `routes.login`        | `String`   | `false`  | `login`               | The route to sends a post request to login. |
+| `routes.logout`       | `String`   | `false`  | `logout`              | The route to sends a post request to logout. |
+| `routes.me`           | `String`   | `false`  | `me`                  | The route to sends a get request to get the current authenticated user. |
 
+---
+## ⚙️ VueSanctum API
+Native methods and properties are directly accessible through `this.$sanctum`
+#### Properties
+| Name       | Type       | Default          | Description |
+| ---------- | ---------- | ---------------- | ----------- |
+| `eventBus` | `Function` | `null`           | A new Vue instance to emit and listen to events. |
+| `options`  | `Object`   | Default options  | The final option structure. |
+
+#### Methods
+| Name                 | Params                               | Return    |  Description |
+| -------------------- | ------------------------------------ |---------- |  ----------- |
+| `fetchCSRFToken()`   |                                      | `Promise` | Sends a get request to the `csrf route`. |
+| `login(credentials)` | `{email: string, password: string }` | `Promise` | Fetch the XSRF Token and sends a post request to the `login route`. |
+| `logout()`           |                                      | `Promise` | Sends a post request to the `logout route` and finally delete the XSRF Cookie. |
+| `me()`               |                                      | `Promise` | Sends a get request to the `me route`. |
+| `hasXSRFToken()`     |                                      | `Boolean` | Checks if the XSRF Cookie is set. |
+
+### Vuex API
+The Vuex module is namespaced to the `storeModuleName` option.
+#### State
+| Name              | Type      | Default | Description |
+| ----------------- | --------- | ------- | ----------- |
+| `user`            | `Object`  | `{}`    | The authenticated user. |
+| `isAuthenticated` | `Boolean` | `false` | Is set to true if the user is the first time set. |
+| `hasXSRFToken`    | `Boolean` | `false` | Is set to true if XSRF Cookie exists or is fetched. |
+
+#### Mutations
+| Name                       | Params        |  Description |
+| -------------------------- | --------------|  ----------- |
+| `setUser`                  | `User Object` | Sets the `user` state. Is called in the `fetchUser` action. If user is set the first time, the `sanctum:userInitialized` Event is fired. |
+| `updateAuthenticatedState` | `Boolean`     | Sets the `isAuthenticated` state. If the state changes to true, the `sanctum:authenticated` Event is fired. |
+| `updateXSRFTokenState`     | `Boolean`     | Sets the `hasXSRFToken` state. |
+| `clear`                    |               | Clears the `user` state and emits the `sanctum:loggedOut` Event. Is also invoked from the `clear` action. |
+
+#### Actions
+| Name           | Params                               |  Description |
+| ---------------| ------------------------------------ |  ----------- |
+| `login`        | `{email: string, password: string }` | Invokes the `$sanctum.login()` method, commits the `updateXSRFTokenState` mutation and dispatch the `fetchUser` action if the `fetchUserAfterLogin` option is enabled. |
+| `fetchUser`    |                                      | Invokes the `$sanctum.me()` method, commits the `setUser` and the `updateAuthenticatedState` mutation. |
+| `logout`       |                                      | Invokes the `$sanctum.logout()` method. Finally dispatches the `clear` action. |
+| `tryAutoLogin` |                                      | Checks the `hasXSRFToken` state, if is set to false, it reject the action. Otherwise it will try to dispatch the `fetchUser` action. |
+| `clear`        |                                      | Sets the `updateXSRFTokenState` and `updateAuthenticatedState` state to false and commits the `clear` mutation.  |
+
+#### Getters
+| Name              | Description |
+| ------------------| ----------- |
+| `getUser`         | Returns the `user` state. |
+| `isAuthenticated` | Returns the `isAuthenticated` state. |
+| `hasXSRFToken`    | Returns the `hasXSRFToken` state. |
 ---
 ## 🎉 VueSanctum Events
 Events are only emitted from the `Vuex` store.

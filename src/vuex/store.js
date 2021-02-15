@@ -33,7 +33,9 @@ export default {
         login({ commit, dispatch }, credentials) {
             return this._vm.$sanctum.login(credentials).then(({ data }) => {
                 commit('updateXSRFTokenState', this._vm.$sanctum.hasXSRFToken());
-                dispatch('fetchUser');
+                if (this._vm.$sanctum.options.fetchUserAfterLogin) {
+                    dispatch('fetchUser');
+                }
                 return data;
             });
         },
@@ -54,7 +56,6 @@ export default {
                 return Promise.reject();
             }
             return dispatch('fetchUser').catch(error => {
-                //   deleteCookie(COOKIES.XSRF_TOKEN);
                 dispatch('clear');
                 throw error;
             });
